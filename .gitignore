@@ -1,0 +1,78 @@
+﻿# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Local .terraform directories
+**/.terraform/
+**/.terraform.lock.hcl
+
+# Terraform modules
+.terraform/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# AWS
+aws-exports.js
+
+# Secrets
+secrets.yml
+secrets.yaml
+*.pem
+*.key
+
+# Build artifacts
+dist/
+build/
+target/
+
+# OS specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# Reports
+reports/
+*.sarif
