@@ -81,7 +81,7 @@ module "vpc" {
   private_subnet_cidrs     = var.private_subnet_cidrs
   enable_nat_gateway       = true
   enable_vpc_flow_logs     = true
-  flow_logs_retention_days = 7
+  flow_logs_retention_days = 10
 
   tags = local.common_tags
 }
