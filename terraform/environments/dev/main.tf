@@ -16,7 +16,7 @@ terraform {
 
   # Terraform Cloud backend configuration
   cloud {
-    organization = "SKS-Infrastructure-Corporation" 
+    organization = "SKS-Infrastructure-Corporation"
 
     workspaces {
       name = "infrastructure-pipeline-dev"
@@ -61,7 +61,7 @@ data "aws_ami" "amazon_linux" {
 # Local variables
 locals {
   availability_zones = slice(data.aws_availability_zones.available.names, 0, 2)
-  
+
   common_tags = {
     Project     = var.project_name
     Environment = var.environment
@@ -73,14 +73,14 @@ locals {
 module "vpc" {
   source = "../../modules/vpc"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  vpc_cidr           = var.vpc_cidr
-  availability_zones = local.availability_zones
-  public_subnet_cidrs  = var.public_subnet_cidrs
-  private_subnet_cidrs = var.private_subnet_cidrs
-  enable_nat_gateway   = true
-  enable_vpc_flow_logs = true
+  project_name             = var.project_name
+  environment              = var.environment
+  vpc_cidr                 = var.vpc_cidr
+  availability_zones       = local.availability_zones
+  public_subnet_cidrs      = var.public_subnet_cidrs
+  private_subnet_cidrs     = var.private_subnet_cidrs
+  enable_nat_gateway       = true
+  enable_vpc_flow_logs     = true
   flow_logs_retention_days = 7
 
   tags = local.common_tags
@@ -90,18 +90,18 @@ module "vpc" {
 module "compute" {
   source = "../../modules/compute"
 
-  project_name        = var.project_name
-  environment         = var.environment
-  vpc_id              = module.vpc.vpc_id
-  public_subnet_ids   = module.vpc.public_subnet_ids
-  private_subnet_ids  = module.vpc.private_subnet_ids
-  ami_id              = data.aws_ami.amazon_linux.id
-  instance_type       = var.instance_type
-  min_size            = var.min_size
-  max_size            = var.max_size
-  desired_capacity    = var.desired_capacity
-  health_check_path   = "/health"
-  ssh_cidr_blocks     = [] # Empty for dev, restrict in production
+  project_name       = var.project_name
+  environment        = var.environment
+  vpc_id             = module.vpc.vpc_id
+  public_subnet_ids  = module.vpc.public_subnet_ids
+  private_subnet_ids = module.vpc.private_subnet_ids
+  ami_id             = data.aws_ami.amazon_linux.id
+  instance_type      = var.instance_type
+  min_size           = var.min_size
+  max_size           = var.max_size
+  desired_capacity   = var.desired_capacity
+  health_check_path  = "/health"
+  ssh_cidr_blocks    = [] # Empty for dev, restrict in production
 
   tags = local.common_tags
 
@@ -134,17 +134,17 @@ module "database" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name              = var.project_name
-  environment               = var.environment
-  aws_region                = var.aws_region
-  alarm_email_addresses     = var.alarm_email_addresses
-  alb_arn_suffix            = split("/", module.compute.alb_arn)[1]
-  target_group_arn_suffix   = split(":", module.compute.target_group_arn)[5]
-  db_instance_id            = module.database.db_instance_id
-  db_connections_threshold  = 50
+  project_name               = var.project_name
+  environment                = var.environment
+  aws_region                 = var.aws_region
+  alarm_email_addresses      = var.alarm_email_addresses
+  alb_arn_suffix             = split("/", module.compute.alb_arn)[1]
+  target_group_arn_suffix    = split(":", module.compute.target_group_arn)[5]
+  db_instance_id             = module.database.db_instance_id
+  db_connections_threshold   = 50
   application_log_group_name = "/aws/application/${var.project_name}-${var.environment}"
-  enable_cost_budget        = true
-  monthly_budget_limit      = "50"
+  enable_cost_budget         = true
+  monthly_budget_limit       = "50"
 
   tags = local.common_tags
 
