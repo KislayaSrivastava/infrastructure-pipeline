@@ -1,0 +1,109 @@
+name: 'Terraform Production'
+
+on:
+  workflow_dispatch:  # Manual trigger only
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  TF_CLOUD_ORGANIZATION: "SKS-Infrastructure-Corporation"  # TODO: Update this
+  TF_WORKSPACE: "production"
+  TF_VERSION: "1.6.0"
+
+jobs:
+  terraform-plan:
+    name: 'Terraform Plan (Production)'
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'plan'
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform/environments/prod
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan -no-color
+
+  terraform-apply:
+    name: 'Terraform Apply (Production)'
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'apply'
+    environment: production  # Requires manual approval + reviewers
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform/environments/prod
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Plan
+      run: terraform plan -no-color
+
+    - name: Wait for Approval
+      run: echo "⏸️ Waiting for manual approval before applying to production..."
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -input=false
+
+    - name: Get Outputs
+      id: outputs
+      run: |
+        echo "alb_url=$(terraform output -raw alb_url)" >> $GITHUB_OUTPUT
+
+    - name: Notify Success
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `### 🎉 Production Deployed Successfully!
+          
+          **Application URL:** ${{ steps.outputs.outputs.alb_url }}
+          **Deployed by:** @${{ github.actor }}
+          
+          ⚠️ Production infrastructure is now live!`;
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: output
+          })
