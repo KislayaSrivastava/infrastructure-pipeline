@@ -1,4 +1,4 @@
-name: 'Terraform Dev Script'
+name: 'Terraform Development Script'
 
 on:
   pull_request:
