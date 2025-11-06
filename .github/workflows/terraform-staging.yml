@@ -1,4 +1,4 @@
-name: 'Terraform Staging'
+name: 'Terraform Staging Script'
 
 on:
   pull_request:
